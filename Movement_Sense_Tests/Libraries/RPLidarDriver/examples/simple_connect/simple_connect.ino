@@ -41,34 +41,31 @@
 // This sketch code is based on the RPLIDAR driver library provided by RoboPeak
 #include <RPLidar.h>
 
-// You need to creat  e an driver instance 
+// You need to create an driver instance 
 RPLidar lidar;
 
 #define RPLIDAR_MOTOR 3 // The PWM pin for control the speed of RPLIDAR's motor.
                         // This pin should connected with the RPLIDAR's MOTOCTRL signal 
+                       
                         
 void setup() {
   // bind the RPLIDAR driver to the arduino hardware serial
   lidar.begin(Serial);
-
+  
   // set pin modes
   pinMode(RPLIDAR_MOTOR, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT); // We using this to figure 
 }
 
 void loop() {
   if (IS_OK(lidar.waitPoint())) {
-  
-      analogWrite(LED_BUILTIN, HIGH); 
-      delay(1000);
-      analogWrite(LED_BUILTIN, LOW);
-      delay(1000);
-//    float distance = lidar.getCurrentPoint().distance; //distance value in mm unit
-//    float angle    = lidar.getCurrentPoint().angle; //anglue value in degree
-//    bool  startBit = lidar.getCurrentPoint().startBit; //whether this point is belong to a new scan
-//    byte  quality  = lidar.getCurrentPoint().quality; //quality of the current measurement   
+    float distance = lidar.getCurrentPoint().distance; //distance value in mm unit
+    float angle    = lidar.getCurrentPoint().angle; //anglue value in degree
+    bool  startBit = lidar.getCurrentPoint().startBit; //whether this point is belong to a new scan
+    byte  quality  = lidar.getCurrentPoint().quality; //quality of the current measurement
+    
     //perform data processing here... 
-     
+    
+    
   } else {
     analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
     
@@ -76,7 +73,6 @@ void loop() {
     rplidar_response_device_info_t info;
     if (IS_OK(lidar.getDeviceInfo(info, 100))) {
        // detected...
-       analogWrite(LED_BUILTIN, HIGH);     
        lidar.startScan();
        
        // start motor rotating at max allowed speed
@@ -84,5 +80,4 @@ void loop() {
        delay(1000);
     }
   }
-
 }
