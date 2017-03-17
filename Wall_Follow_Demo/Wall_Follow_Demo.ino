@@ -25,7 +25,7 @@ int switch1 = 2;                                  // connect a push button switc
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
 boolean flag = false;
 boolean servo_enable = false;
-float ANGLE_TO_TIME_MULTIPLIER = 7.055555;                      //seconds/degrees
+float ANGLE_TO_TIME_MULTIPLIER = 7.5;                      //degrees * milliseconds/degrees = milliseconds to run 
 
 #define CM 1
 
@@ -69,10 +69,10 @@ void loop()
     Serial.print("Right distance: "); Serial.println(rightDistance);
 
 
-    if(forwardDistance < 10) {
+    if(forwardDistance < 15) {
       reverse(400);
     }
-    else if(forwardDistance < 15) {
+    else if(forwardDistance < 20) {
       Serial.println("Rotate left.");
       rotateLeft(90);
     } else {
@@ -82,18 +82,19 @@ void loop()
         forward(200);
       } else if(rightDistance > 20 && rightDistance < 35) {
         Serial.println("turn right hard.");
-        turnRight();
-        turnRight();
+        Serial.println("turn left sharp.");
+        rotateLeft(12);
+        turnLeft();
         forward(200);
       } else if(rightDistance < 10 && rightDistance > 5) {
         Serial.println("turn left.");
         turnLeft();
         forward(200);
-      } else if(rightDistance < 5) {
+      } else if(rightDistance < 8) {
         Serial.println("turn left sharp.");
         rotateLeft(15);
         turnLeft();
-        forward(200);
+        forward(100);
       } else if(rightDistance > 35 && lastRightDistance < 35) {
         Serial.println("Rotate right.");
         forward(1200);
