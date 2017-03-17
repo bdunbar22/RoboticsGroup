@@ -18,19 +18,20 @@
  */
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
-Ultrasonic ultrasonicForward( 8, 11 );            // Trig then Echo pins
-Ultrasonic ultrasonicRight( 12, 13 );           
+Ultrasonic ultrasonicRight( 8, 11 );              // Trig then Echo pins
+Ultrasonic ultrasonicForward( 4, 5 );           
 
 int switch1 = 2;                                  // connect a push button switch between this pin and ground
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
 boolean flag = false;
 boolean servo_enable = false;
-float ANGLE_TO_TIME_MULTIPLIER = 6.055555;                      //seconds/degrees
+float ANGLE_TO_TIME_MULTIPLIER = 7.055555;                      //seconds/degrees
 
 #define CM 1
 
 long forwardDistance;
 long rightDistance;
+long lastRightDistance = 150;
 
 
 /* ==============================================================================================================================================
@@ -52,27 +53,69 @@ void setup()
  */
 void loop()
 { 
-
-  forwardDistance = ultrasonicForward.Ranging(CM);
-  rightDistance = ultrasonicRight.Ranging(CM);
-
-  Serial.print("Foward distance: "); Serial.print(ultrasonicForward.Ranging(CM));
-  Serial.print(" Right distance: "); Serial.println(rightDistance);
-  
-  if (digitalRead(switch1)==LOW){
+  if (digitalRead(switch1)==HIGH){
     delay(5); 
     flipflop(); 
   }
 
+  //Serial.println("Check enable");
   if (servo_enable){
     attachRobot();
 
-    Serial.println("Running!");
- 
+    rightDistance = ultrasonicRight.Ranging(CM);
+    forwardDistance = ultrasonicForward.Ranging(CM);
+
+    Serial.print("Foward distance: "); Serial.println(forwardDistance);
+    Serial.print("Right distance: "); Serial.println(rightDistance);
+
+
+    if(forwardDistance < 10) {
+      reverse(400);
+    }
+    else if(forwardDistance < 15) {
+      Serial.println("Rotate left.");
+      rotateLeft(90);
+    } else {
+      if(rightDistance > 15 && rightDistance < 20) {
+        Serial.println("turn right.");
+        turnRight();
+        forward(200);
+      } else if(rightDistance > 20 && rightDistance < 35) {
+        Serial.println("turn right hard.");
+        turnRight();
+        turnRight();
+        forward(200);
+      } else if(rightDistance < 10 && rightDistance > 5) {
+        Serial.println("turn left.");
+        turnLeft();
+        forward(200);
+      } else if(rightDistance < 5) {
+        Serial.println("turn left sharp.");
+        rotateLeft(15);
+        turnLeft();
+        forward(200);
+      } else if(rightDistance > 35 && lastRightDistance < 35) {
+        Serial.println("Rotate right.");
+        forward(1200);
+        attachRobot();
+        rotateRight(90);
+        forward(200);
+      } else {
+        Serial.println("Advance.");
+        forward(200);
+      }
+    }
+
+    lastRightDistance = rightDistance;
+    
+    //Serial.println("Running!");
   }
   else{
     detachRobot();
   }
+
+  delay(5); // Try not to draw too much power
+  //Serial.println("End of loop");
 }                                                 // end of main loop.
 
 /* ==============================================================================================================================================
@@ -92,17 +135,21 @@ void flipflop(){                                        //funtion flipflop
     digitalWrite(ledpin,LOW);                           // if the flag var is LOW turn the pin off 
   }
   
-  while(digitalRead(switch1)==LOW);                     // for "slow" button release, keeps us in the function until button is UN-pressed
+  while(digitalRead(switch1)==HIGH);                     // for "slow" button release, keeps us in the function until button is UN-pressed
 }
 
-void forward() {
+void forward(int moveTime) {
   servoLeft.write(180);
   servoRight.write(0);
+  delay(moveTime);
+  detachRobot();
 }
 
-void reverse() {
+void reverse(int moveTime) {
   servoLeft.write(0);
   servoRight.write(180);
+  delay(moveTime);
+  detachRobot();
 }
 
 /**
@@ -131,6 +178,7 @@ void rotateRight(int degree) {
   servoLeft.write(180);
   servoRight.write(180);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
 }
 
 /**
@@ -140,6 +188,7 @@ void rotateLeft(int degree) {
   servoLeft.write(0);
   servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
 }
 
 void detachRobot() {
