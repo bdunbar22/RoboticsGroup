@@ -9,6 +9,7 @@ int switch1 = 2; // connect a push button switch between this pin and ground
 int ledpin = 13; // internal led, external LED, relay, trigger for other function, some other device, whatever.
 boolean flag = false;
 boolean servo_enable = false;
+float multiplier = 6.055555; //seconds/degrees
 
 void setup()
 {
@@ -17,8 +18,8 @@ void setup()
   Serial.begin(9600); // just for debugging, not needed.
   servoLeft.attach(10);  // Set left servo to digital pin 10
   servoRight.attach(9);  // Set right servo to digital pin 9
-  testInputs();
-  stopRobot();
+//  testInputs();
+//  stopRobot();
 }
 
 void loop()
@@ -29,19 +30,18 @@ void loop()
   }
 
   if (servo_enable){
-    forward();
-    delay(1000);
-    reverse();
-    delay(1000);
-    turnRight();
-    delay(1000);
-    stopRobot();         
-    turnLeft();
-    delay(1000);         
-    stopRobot();
+    attachRobot();
+    turnRight(90);
+    detachRobot();
+    delay(200);
+    attachRobot();         
+    turnLeft(90);
+    detachRobot();
+    delay(200);s
+ 
   }
   else{
-    stopRobot();
+    detachRobot();
   }
 
 } // end of main loop.
@@ -65,27 +65,35 @@ void flipflop(){  //funtion flipflop
 }
 
 void forward() {
-  servoLeft.write(0);
-  servoRight.write(180);
+  servoLeft.write(180);
+  servoRight.write(0);
 }
 void reverse() {
-  servoLeft.write(180);
-  servoRight.write(0);
-}
-void turnRight() {
-  servoLeft.write(180);
+  servoLeft.write(0);
   servoRight.write(180);
 }
-void turnLeft() {
+void turnRight(int degree) {
+  servoLeft.write(180);
+  servoRight.write(180);
+  delay(degree*multiplier);
+}
+void turnLeft(int degree) {
   servoLeft.write(0);
   servoRight.write(0);
+  delay(degree*multiplier);
 }
-void stopRobot() {
-  servoLeft.write(95);
-  servoRight.write(97); //debugged for inconsistent motors                
+void detachRobot() {
+  servoLeft.detach();
+  servoRight.detach();
+}
+void attachRobot(){
+  servoLeft.attach(10);  
+  servoRight.attach(9); 
+//  servoLeft.write(95);
+//  servoRight.write(97); //debugged for inconsistent motors                
 }
 
-
+/*
 void testInputs() {
   for(int i = 85; i < 100; i+= 1) {
     servoLeft.write(i);
@@ -94,4 +102,4 @@ void testInputs() {
     delay(2000);
   }
 }
-
+*/
