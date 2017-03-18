@@ -25,7 +25,7 @@ int switch1 = 2;                                  // connect a push button switc
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
 boolean flag = false;
 boolean servo_enable = false;
-float ANGLE_TO_TIME_MULTIPLIER = 7.5;                      //degrees * milliseconds/degrees = milliseconds to run 
+float ANGLE_TO_TIME_MULTIPLIER = 7.8;                      //degrees * milliseconds/degrees = milliseconds to run 
 
 #define CM 1
 
@@ -42,8 +42,6 @@ void setup()
   pinMode(ledpin,OUTPUT);                         // this pin controlled by flipflop() function
   pinMode (switch1,INPUT_PULLUP);                 // keeps pin HIGH via internal pullup resistor unless brought LOW with switch
   Serial.begin(9600);                             // just for debugging, not needed.
-  servoLeft.attach(10);                           // Set left servo to digital pin 10
-  servoRight.attach(9);                           // Set right servo to digital pin 9
 //  testInputs();
 //  stopRobot();
 }
@@ -60,8 +58,6 @@ void loop()
 
   //Serial.println("Check enable");
   if (servo_enable){
-    attachRobot();
-
     rightDistance = ultrasonicRight.Ranging(CM);
     forwardDistance = ultrasonicForward.Ranging(CM);
 
@@ -69,41 +65,31 @@ void loop()
     Serial.print("Right distance: "); Serial.println(rightDistance);
 
 
-    if(forwardDistance < 15) {
-      reverse(400);
-    }
-    else if(forwardDistance < 20) {
+    if(forwardDistance < 12) {
       Serial.println("Rotate left.");
       rotateLeft(90);
     } else {
-      if(rightDistance > 15 && rightDistance < 20) {
+      if(rightDistance > 30 && rightDistance < 45) {
         Serial.println("turn right.");
         turnRight();
-        forward(200);
-      } else if(rightDistance > 20 && rightDistance < 35) {
-        Serial.println("turn right hard.");
+        forward(50);
+      } else if(rightDistance < 10) {
         Serial.println("turn left sharp.");
         rotateLeft(12);
         turnLeft();
-        forward(200);
-      } else if(rightDistance < 10 && rightDistance > 5) {
+        forward(50);
+      } else if(rightDistance < 25) {
         Serial.println("turn left.");
         turnLeft();
-        forward(200);
-      } else if(rightDistance < 8) {
-        Serial.println("turn left sharp.");
-        rotateLeft(15);
-        turnLeft();
-        forward(100);
-      } else if(rightDistance > 35 && lastRightDistance < 35) {
+        forward(50);
+      } else if (rightDistance > 45 && lastRightDistance < 45) {
         Serial.println("Rotate right.");
         forward(1200);
-        attachRobot();
         rotateRight(90);
         forward(200);
       } else {
         Serial.println("Advance.");
-        forward(200);
+        forward(50);
       }
     }
 
@@ -115,7 +101,7 @@ void loop()
     detachRobot();
   }
 
-  delay(5); // Try not to draw too much power
+  delay(3); // Try not to draw too much power
   //Serial.println("End of loop");
 }                                                 // end of main loop.
 
@@ -140,6 +126,7 @@ void flipflop(){                                        //funtion flipflop
 }
 
 void forward(int moveTime) {
+  attachRobot();
   servoLeft.write(180);
   servoRight.write(0);
   delay(moveTime);
@@ -147,6 +134,7 @@ void forward(int moveTime) {
 }
 
 void reverse(int moveTime) {
+  attachRobot();
   servoLeft.write(0);
   servoRight.write(180);
   delay(moveTime);
@@ -158,24 +146,29 @@ void reverse(int moveTime) {
  * debugged for a small angle
  */
 void turnRight() {
+  attachRobot();
   servoLeft.write(93);
   servoRight.write(180);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
 }
 
 /**
  * Rotate in place
  */
 void turnLeft() {
+  attachRobot();
   servoLeft.write(0);
   servoRight.write(93);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
 }
 
 /**
  * Rotate in place
  */
 void rotateRight(int degree) {
+  attachRobot();
   servoLeft.write(180);
   servoRight.write(180);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
@@ -186,6 +179,7 @@ void rotateRight(int degree) {
  * Rotate in place
  */
 void rotateLeft(int degree) {
+  attachRobot();
   servoLeft.write(0);
   servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
