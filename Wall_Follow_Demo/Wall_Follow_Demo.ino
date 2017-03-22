@@ -88,6 +88,12 @@ void loop()
         rotateRight(90);
         forward(200);
       } else {
+        /* Smooth out tragectory while in desired zone. */
+        if(rightDistance - lastRightDistance > 1) {
+          turnRight();
+        } else if(lastRightDistance - rightDistance > 1) {
+          turnLeft();
+        }
         Serial.println("Advance.");
         forward(50);
       }
