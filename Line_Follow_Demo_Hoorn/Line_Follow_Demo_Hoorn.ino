@@ -38,9 +38,9 @@ int memory = 0;
 #define RIGHT_IR A2
 #define HOORN_IR A3
 #define LEFT_VAL 105
-#define CENTER_VAL 105
+#define CENTER_VAL 108
 #define RIGHT_VAL 115
-#define HOORN_VAL 95
+#define HOORN_VAL 104
 
 
 long forwardDistance;
@@ -81,13 +81,13 @@ void loop()
   Serial.print("L : "); Serial.print(analogRead(A0)); Serial.print(" C: "); Serial.print(analogRead(A1));
   Serial.print(" R : "); Serial.print(analogRead(A2));
   Serial.print(" H : "); Serial.println(analogRead(A3));
-  servo_enable = false;
   if(servo_enable) {
     // Going through all combinations via binary counting
     // choose action based on sensors
-    // 3^3 possible sensor combinations
-    if(hoornBlack() && !leftBlack() && !centerBlack() && !rightBlack()) {
-        Serial.print("____  ____  ____\n");
+    // 2^3 possible sensor combinations
+    // For some of these the Hoorn doesn't matter
+    if(!hoornBlack() && !leftBlack() && !centerBlack() && !rightBlack()) {
+        Serial.print("____ ____  ____  ____\n");
         if (memory == 1) {
           rotateRight(20);
           memory = 0;
@@ -95,7 +95,10 @@ void loop()
           rotateLeft(20);
           memory = 0;
         } 
-//        forward(25);
+    }    
+    else if(hoornBlack() && !leftBlack() && !centerBlack() && !rightBlack()) {
+        Serial.print("HOORN ____  ____  ____\n");
+        forward(25);
     }
     else if(!leftBlack() && !centerBlack() && rightBlack()) {
       Serial.print("____  ____  RIGHT\n");
@@ -140,20 +143,25 @@ void loop()
       }
       memory = -1;
     }
-    else if(leftBlack() && centerBlack() && rightBlack()) {
-      Serial.print("LEFT CENTER RIGHT\n");
+    else if(hoornBlack() && leftBlack() && centerBlack() && rightBlack()) {
+      Serial.print("HOORN LEFT CENTER RIGHT\n");
       forward(25);
-//      if (memory == 1) {
-//        rotateRight(20);
-//      } else if(memory == -1) {
-//        rotateLeft(20);
-//      } else {
+    }
+    else if(!hoornBlack() && leftBlack() && centerBlack() && rightBlack()) {
+      forward(25);
+      if (memory == 1) {
+        rotateRight(20);
+      } else if(memory == -1) {
+        rotateLeft(20);
+      } else {
+      forward(25);
         if(leftBlack() && centerBlack() && rightBlack()) {
            //If still black stop
             detachRobot();
             servo_enable = false;
         } 
       }
+    }
   }
   delay(1); // Try not to draw too much power or go to fast.
 }                                                 
