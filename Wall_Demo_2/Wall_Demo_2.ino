@@ -2,17 +2,9 @@
  * Ben Dunbar, Gareth Moo, Eric Shi
  * 
  * Robotics Lab
- * Line Following Robot
+ * Wall Following Robot
  * 3/17/17
  * 
- * This robot will follow a black line on a piece of wood or other light background.
- * When the left sensor no longer recieves reflected light, we will assume it is over the black line and turn left to correct our direction.
- * When the right sensor no longer recieves reflected light, we will turn right.
- * If both sensors are recieving light normally, we will continue forward.
- * 
- * We have included code to stop the robot by putting a hand right in front of a sonar sensor on the robot.
- * 
- * To start the robot, press the red button on the front of the robot.
  */
 
 /* ==============================================================================================================================================
@@ -26,6 +18,7 @@
  */
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
+Ultrasonic ultrasonicRight( 8, 11 );              // Trig then Echo pins
 Ultrasonic ultrasonicForward( 4, 5 );           
 
 int switch1 = 2;                                  // connect a push button switch between this pin and ground
@@ -35,9 +28,11 @@ boolean servo_enable = false;
 float ANGLE_TO_TIME_MULTIPLIER = 7.8;                      //degrees * milliseconds/degrees = milliseconds to run 
 
 #define CM 1
-#define LEFT_IR 11
 
 long forwardDistance;
+long rightDistance;
+long lastRightDistance = -1;
+int lastTurn = 0;             // -1 turned left, 1 turned right. all others are not counted.
 
 
 /* ==============================================================================================================================================
@@ -45,11 +40,11 @@ long forwardDistance;
  */
 void setup()
 {
-  tone(3, 38000);
-  pinMode(LEFT_IR, INPUT);
   pinMode(ledpin,OUTPUT);                         // this pin controlled by flipflop() function
   pinMode (switch1,INPUT_PULLUP);                 // keeps pin HIGH via internal pullup resistor unless brought LOW with switch
   Serial.begin(9600);                             // just for debugging, not needed.
+//  testInputs();
+//  stopRobot();
 }
 
 /* ==============================================================================================================================================
@@ -57,51 +52,60 @@ void setup()
  */
 void loop()
 { 
-//  Serial.print("VAL = "); Serial.println(analogRead(A0));
-  if(digitalRead(LEFT_IR)) {
-    Serial.print("VAL = "); Serial.println("1");
-  } else {
-    Serial.print("VAL = "); Serial.println("0");
+  if (digitalRead(switch1)==HIGH){
+    delay(5); 
+    flipflop(); 
   }
-//  
-//  if (digitalRead(switch1)==HIGH){
-//    delay(5); 
-//    flipflop(); 
-//  }
 
   //Serial.println("Check enable");
   if (servo_enable){
+    rightDistance = ultrasonicRight.Ranging(CM);
     forwardDistance = ultrasonicForward.Ranging(CM);
 
     Serial.print("Foward distance: "); Serial.println(forwardDistance);
+    Serial.print("Right distance: "); Serial.println(rightDistance);
 
-//    if(forwardDistance < 15) {
-//      detachRobot();
-//    } else {
 
-      // Note: we should test out using turn or rotate then forward functions.
-      // One or the other approach might be better depending on how curved the line to follow will be.  
-      // The parameters sent to the functions would have to be tested and adjusted.  
-  
-      //if left ir sensor no longer receiving, turn left {
-      //  turnLeft();
-      //}
-
-      //else if right ir sensor no longer receiving, turn right{
-      //  turnRight();
-      //}
-
-      //else, forward. {
-      //  forward(25);
-      //}
-
-      // NOTE: we can also chat about adding some enchanements, like
-      // once a sensor starts recieving again, do a slight correction in the opposite direction of
-      // the last turn to "straighten out" 
+    if(forwardDistance < 12) {
+      Serial.println("Rotate left.");
+      rotateLeft(90);
+      lastRightDistance = -1;
+      lastTurn = 0;
+    } else {
+      if (rightDistance > 60 && lastRightDistance < 60) {
+        Serial.println("Rotate right.");
+        forward(1200);
+        rotateRight(90);
+        forward(200);
+        lastRightDistance = -1;
+        lastTurn = 0;
+      } else {
+        if((lastRightDistance != -1 && rightDistance > lastRightDistance || rightDistance > 35) && lastTurn != -1) {
+            turnRight();
+            forward(50);
+        } else if((lastRightDistance != -1 && lastRightDistance > rightDistance || rightDistance < 15) && lastTurn != 1) {
+          turnLeft();
+          forward(50);
+        } else {
+          lastTurn = 0;
+        }
+        Serial.println("Advance.");
+        forward(50);
+        lastRightDistance = rightDistance;
+      }
     }
 
-  delay(3); // Try not to draw too much power or go to fast.
-}                                                 
+    lastRightDistance = rightDistance;
+    
+    //Serial.println("Running!");
+  }
+  else{
+    detachRobot();
+  }
+
+  delay(3); // Try not to draw too much power
+  //Serial.println("End of loop");
+}                                                 // end of main loop.
 
 /* ==============================================================================================================================================
  * Functions
@@ -149,6 +153,7 @@ void turnRight() {
   servoRight.write(180);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  lastTurn = 1;
 }
 
 /**
@@ -160,6 +165,7 @@ void turnLeft() {
   servoRight.write(93);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  lastTurn = -1;
 }
 
 /**

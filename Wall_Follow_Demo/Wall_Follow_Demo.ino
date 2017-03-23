@@ -69,31 +69,33 @@ void loop()
       Serial.println("Rotate left.");
       rotateLeft(90);
     } else {
-      if(rightDistance > 30 && rightDistance < 45) {
+      if(rightDistance > 25 && rightDistance < 60) {
         Serial.println("turn right.");
         turnRight();
-        forward(50);
+        forward(100);
       } else if(rightDistance < 10) {
         Serial.println("turn left sharp.");
         rotateLeft(12);
         turnLeft();
-        forward(50);
-      } else if(rightDistance < 25) {
+        forward(100);
+      } else if(rightDistance < 20) {
         Serial.println("turn left.");
         turnLeft();
-        forward(50);
-      } else if (rightDistance > 45 && lastRightDistance < 45) {
+        forward(100);
+      } else if (rightDistance > 60 && lastRightDistance < 60) {
         Serial.println("Rotate right.");
         forward(1200);
         rotateRight(90);
         forward(200);
       } else {
         /* Smooth out tragectory while in desired zone. */
-        if(rightDistance - lastRightDistance > 1) {
-          turnRight();
-        } else if(lastRightDistance - rightDistance > 1) {
-          turnLeft();
-        }
+        //if(rightDistance - lastRightDistance > 3) {
+        //  turnRight();
+        //  forward(100);
+        //} else if(lastRightDistance - rightDistance > 3) {
+        //  turnLeft();
+        //  forward(100);
+        //}
         Serial.println("Advance.");
         forward(50);
       }
