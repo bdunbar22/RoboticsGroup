@@ -19,14 +19,12 @@
  * Includes 
  */
 #include <Servo.h>
-#include "Ultrasonic.h"
 
 /* ==============================================================================================================================================
  * Declare variables
  */
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
-Ultrasonic ultrasonicForward( 4, 5 );           
 
 int switch1 = 2;                                  // connect a push button switch between this pin and ground
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
@@ -34,8 +32,13 @@ boolean flag = false;
 boolean servo_enable = false;
 float ANGLE_TO_TIME_MULTIPLIER = 7.8;                      //degrees * milliseconds/degrees = milliseconds to run 
 
-#define CM 1
-#define LEFT_IR 11
+#define LEFT_IR A0
+#define CENTER_IR A1
+#define RIGHT_IR A2
+#define LEFT_VAL 102
+#define CENTER_VAL 102
+#define RIGHT_VAL 115
+
 
 long forwardDistance;
 
@@ -45,8 +48,6 @@ long forwardDistance;
  */
 void setup()
 {
-  tone(3, 38000);
-  pinMode(LEFT_IR, INPUT);
   pinMode(ledpin,OUTPUT);                         // this pin controlled by flipflop() function
   pinMode (switch1,INPUT_PULLUP);                 // keeps pin HIGH via internal pullup resistor unless brought LOW with switch
   Serial.begin(9600);                             // just for debugging, not needed.
@@ -57,24 +58,17 @@ void setup()
  */
 void loop()
 { 
-//  Serial.print("VAL = "); Serial.println(analogRead(A0));
-  if(digitalRead(LEFT_IR)) {
-    Serial.print("VAL = "); Serial.println("1");
-  } else {
-    Serial.print("VAL = "); Serial.println("0");
-  }
-//  
-//  if (digitalRead(switch1)==HIGH){
-//    delay(5); 
-//    flipflop(); 
-//  }
-
-  //Serial.println("Check enable");
-  if (servo_enable){
-    forwardDistance = ultrasonicForward.Ranging(CM);
-
-    Serial.print("Foward distance: "); Serial.println(forwardDistance);
-
+ 
+//    Serial.print("Foward distance: "); Serial.println(forwardDistance);
+    if(leftBlack()) {
+      Serial.print("LEFT\n");
+    }
+    if(centerBlack()) {
+      Serial.print("CENTER \n");
+    }
+    if(rightBlack()) {
+      Serial.print("RIGHT \n");
+    }
 //    if(forwardDistance < 15) {
 //      detachRobot();
 //    } else {
@@ -98,7 +92,11 @@ void loop()
       // NOTE: we can also chat about adding some enchanements, like
       // once a sensor starts recieving again, do a slight correction in the opposite direction of
       // the last turn to "straighten out" 
-    }
+ 
+//      Serial.print("LEFT = "); Serial.print(analogRead(A0));
+//      Serial.print(" | MIDDLE = "); Serial.print(analogRead(A1)); 
+//      Serial.print(" | RIGHT = "); Serial.println(analogRead(A2)); 
+   
 
   delay(3); // Try not to draw too much power or go to fast.
 }                                                 
@@ -106,10 +104,24 @@ void loop()
 /* ==============================================================================================================================================
  * Functions
  */
+
+boolean leftBlack() {
+  return analogRead(LEFT_IR) < LEFT_VAL;
+}
+
+boolean centerBlack() {
+  return analogRead(CENTER_IR) < CENTER_VAL;
+}
+
+boolean rightBlack() {
+  return analogRead(RIGHT_IR) < RIGHT_VAL;
+}
+
+ 
 void flipflop(){                                        //funtion flipflop 
   flag = !flag;                                         // since we are here, the switch was pressed So FLIP the boolian "flag" state 
                                                         //    (we don't even care if switch was released yet)
-  Serial.print("flag =   " );   Serial.println(flag);   // not needed, but may help to see what's happening.
+//  Serial.print("flag =   " );   Serial.println(flag);   // not needed, but may help to see what's happening.
 
   if (flag){
     digitalWrite(ledpin,HIGH );                         // if the flag var is HIGH turn the pin on
