@@ -29,14 +29,15 @@ Servo servoRight;                                 // Define right servo
 int switch1 = 2;                                  // connect a push button switch between this pin and ground
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
 boolean flag = false;
-boolean servo_enable = false;
+boolean servo_enable = true;
 float ANGLE_TO_TIME_MULTIPLIER = 7.8;                      //degrees * milliseconds/degrees = milliseconds to run 
+int memory = 0;                       
 
 #define LEFT_IR A0
 #define CENTER_IR A1
 #define RIGHT_IR A2
-#define LEFT_VAL 102
-#define CENTER_VAL 102
+#define LEFT_VAL 105
+#define CENTER_VAL 105
 #define RIGHT_VAL 115
 
 
@@ -51,6 +52,21 @@ void setup()
   pinMode(ledpin,OUTPUT);                         // this pin controlled by flipflop() function
   pinMode (switch1,INPUT_PULLUP);                 // keeps pin HIGH via internal pullup resistor unless brought LOW with switch
   Serial.begin(9600);                             // just for debugging, not needed.
+//  forward(100);
+//
+//  rotateRight(90);
+//  
+//  rotateLeft(90);
+//
+//forward(15);
+//
+//  delay(500);
+//
+//  turnRight();
+//
+//  delay(500);
+//
+//  turnLeft();
 }
 
 /* ==============================================================================================================================================
@@ -58,47 +74,84 @@ void setup()
  */
 void loop()
 { 
- 
-//    Serial.print("Foward distance: "); Serial.println(forwardDistance);
-    if(leftBlack()) {
-      Serial.print("LEFT\n");
+  //memory -1 = left
+  //        1 = right
+  Serial.print("L : "); Serial.print(analogRead(A0)); Serial.print(" C: "); Serial.print(analogRead(A1));
+  Serial.print(" R : "); Serial.println(analogRead(A2));
+  if(servo_enable) {
+    // Going through all combinations via binary counting
+    // choose action based on sensors
+    // 2^3 possible sensor combinations
+    if(!leftBlack() && !centerBlack() && !rightBlack()) {
+        Serial.print("____  ____  ____\n");
+        if (memory == 1) {
+          rotateRight(20);
+          memory = 0;
+        } else if(memory == -1) {
+          rotateLeft(20);
+          memory = 0;
+        } 
+//        forward(25);
     }
-    if(centerBlack()) {
-      Serial.print("CENTER \n");
+    else if(!leftBlack() && !centerBlack() && rightBlack()) {
+      Serial.print("____  ____  RIGHT\n");
+      rotateRight(45);
+      forward(35);
+      memory = 1;
     }
-    if(rightBlack()) {
-      Serial.print("RIGHT \n");
+      else if(!leftBlack() && centerBlack() && !rightBlack()) {
+      Serial.print("____  CENTER  ____\n");
+      forward(25);
+      memory = 0;
     }
-//    if(forwardDistance < 15) {
-//      detachRobot();
-//    } else {
-
-      // Note: we should test out using turn or rotate then forward functions.
-      // One or the other approach might be better depending on how curved the line to follow will be.  
-      // The parameters sent to the functions would have to be tested and adjusted.  
-  
-      //if left ir sensor no longer receiving, turn left {
-      //  turnLeft();
-      //}
-
-      //else if right ir sensor no longer receiving, turn right{
-      //  turnRight();
-      //}
-
-      //else, forward. {
-      //  forward(25);
-      //}
-
-      // NOTE: we can also chat about adding some enchanements, like
-      // once a sensor starts recieving again, do a slight correction in the opposite direction of
-      // the last turn to "straighten out" 
- 
-//      Serial.print("LEFT = "); Serial.print(analogRead(A0));
-//      Serial.print(" | MIDDLE = "); Serial.print(analogRead(A1)); 
-//      Serial.print(" | RIGHT = "); Serial.println(analogRead(A2)); 
-   
-
-  delay(3); // Try not to draw too much power or go to fast.
+    else if(!leftBlack() && centerBlack() && rightBlack()) {
+      Serial.print("____  CENTER  RIGHT\n");
+      forward(5);
+      if(!(leftBlack() && centerBlack() && rightBlack())) {
+        while(!(!leftBlack() && centerBlack() && !rightBlack()) || (leftBlack() && centerBlack() && !rightBlack())) {
+          turnRight();
+          forward(20);
+        }
+      }
+      memory = 1;
+    }
+    else if(leftBlack() && !centerBlack() && !rightBlack()) {
+      Serial.print("LEFT  ____  ____\n");
+      rotateLeft(45);
+      forward(35);
+      memory = -1;
+    }
+    else if(leftBlack() && !centerBlack() && rightBlack()) {
+      Serial.print("LEFT  ____  RIGHT\n");
+      forward(25);
+    }
+    else if(leftBlack() && centerBlack() && !rightBlack()) {
+      Serial.print("LEFT  CENTER  ____\n");
+      forward(5);
+      if(!(leftBlack() && centerBlack() && rightBlack())) {
+        while(!(!leftBlack() && centerBlack() && !rightBlack()) || (!leftBlack() && centerBlack() && rightBlack())) {
+          turnLeft();
+          forward(20);
+        }
+      }
+      memory = -1;
+    }
+    else if(leftBlack() && centerBlack() && rightBlack()) {
+      Serial.print("LEFT CENTER RIGHT\n");
+      forward(25);
+//      if (memory == 1) {
+//        rotateRight(20);
+//      } else if(memory == -1) {
+//        rotateLeft(20);
+//      } else {
+        if(leftBlack() && centerBlack() && rightBlack()) {
+           //If still black stop
+            detachRobot();
+            servo_enable = false;
+        } 
+      }
+  }
+  delay(1); // Try not to draw too much power or go to fast.
 }                                                 
 
 /* ==============================================================================================================================================
@@ -157,8 +210,8 @@ void reverse(int moveTime) {
  */
 void turnRight() {
   attachRobot();
-  servoLeft.write(93);
-  servoRight.write(180);
+  servoLeft.write(180);
+  servoRight.write(93);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
@@ -168,8 +221,8 @@ void turnRight() {
  */
 void turnLeft() {
   attachRobot();
-  servoLeft.write(0);
-  servoRight.write(93);
+  servoLeft.write(93);
+  servoRight.write(0);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
@@ -180,7 +233,7 @@ void turnLeft() {
 void rotateRight(int degree) {
   attachRobot();
   servoLeft.write(180);
-  servoRight.write(180);
+  servoRight.write(93);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
@@ -190,7 +243,7 @@ void rotateRight(int degree) {
  */
 void rotateLeft(int degree) {
   attachRobot();
-  servoLeft.write(0);
+  servoLeft.write(93);
   servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
@@ -202,8 +255,8 @@ void detachRobot() {
 }
 
 void attachRobot(){
-  servoLeft.attach(10);  
-  servoRight.attach(9); 
+  servoLeft.attach(9);  
+  servoRight.attach(10); 
 }
 
 /*
