@@ -37,10 +37,10 @@ int memory = 0;
 #define CENTER_IR A1
 #define RIGHT_IR A2
 #define HOORN_IR A3
-#define LEFT_VAL 106
+#define LEFT_VAL 105
 #define CENTER_VAL 108
-#define RIGHT_VAL 117
-#define HOORN_VAL 103
+#define RIGHT_VAL 120
+#define HOORN_VAL 110
 
 
 long forwardDistance;
@@ -95,23 +95,27 @@ void loop()
     }
       else if(!leftBlack() && centerBlack() && !rightBlack()) {
       Serial.print("____  CENTER  ____\n");
-      forward(25);
+      forward(50);
     }
     else if(!leftBlack() && centerBlack() && rightBlack()) {
       Serial.print("____  CENTER  RIGHT\n");
       if(!hoornBlack()) {
         int count = 0;
         while(!(!leftBlack() && centerBlack() && !rightBlack()) || (leftBlack() && centerBlack() && !rightBlack())) {
-          if(count < 3 && hoornBlack()) {
+          if(count < 6 && hoornBlack()) {
             break;
           }
-          count++;
+          if(count > 50 && hoornBlack()) {
+            forward(25);
+            break;
+          }
+          count++;    
           turnRight();
           forward(20);
           memory = 1;
         }
       } else {
-        forward(25);
+        forward(40);
       }
     }
     else if(leftBlack() && !centerBlack() && !rightBlack()) {
@@ -121,14 +125,18 @@ void loop()
     }
     else if(leftBlack() && !centerBlack() && rightBlack()) {
       Serial.print("LEFT  ____  RIGHT\n");
-      forward(25);
+      forward(40);
     }
     else if(leftBlack() && centerBlack() && !rightBlack()) {
       Serial.print("LEFT  CENTER  ____\n");
       if(!hoornBlack()) {
         int count = 0;
         while(!(!leftBlack() && centerBlack() && !rightBlack()) || (!leftBlack() && centerBlack() && rightBlack())) {
-          if(count < 3 && hoornBlack()) {
+          if(count < 6 && hoornBlack()) {
+            break;
+          }
+          if(count > 50 && hoornBlack()) {
+            forward(40);
             break;
           }
           count++;
@@ -138,16 +146,16 @@ void loop()
         }
       } else {
         Serial.println("Forward");
-        forward(25);
+        forward(40);
       }
     }
     else if(leftBlack() && centerBlack() && rightBlack()) {
       Serial.print("LEFT CENTER RIGHT\n");
-      forward(25);
+      forward(40);
     }
     else if(leftBlack() && centerBlack() && rightBlack()) {
       if(hoornBlack) {
-            forward(25);
+            forward(40);
       } else if(memory == -1){
         turnLeft();
       } else if(memory == 1) {
@@ -157,7 +165,6 @@ void loop()
       }
     }
   }
-  delay(1); // Try not to draw too much power or go to fast.
 }                                                 
 
 /* ==============================================================================================================================================
