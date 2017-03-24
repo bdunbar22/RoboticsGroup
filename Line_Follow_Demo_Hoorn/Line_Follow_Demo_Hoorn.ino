@@ -37,10 +37,10 @@ int memory = 0;
 #define CENTER_IR A1
 #define RIGHT_IR A2
 #define HOORN_IR A3
-#define LEFT_VAL 105
+#define LEFT_VAL 106
 #define CENTER_VAL 108
-#define RIGHT_VAL 115
-#define HOORN_VAL 104
+#define RIGHT_VAL 117
+#define HOORN_VAL 103
 
 
 long forwardDistance;
@@ -60,7 +60,7 @@ void setup()
 //  
 //  rotateLeft(90);
 //
-//forward(15);
+//  forward(15);
 //
 //  delay(500);
 //
@@ -76,8 +76,6 @@ void setup()
  */
 void loop()
 { 
-  //memory -1 = left
-  //        1 = right
   Serial.print("L : "); Serial.print(analogRead(A0)); Serial.print(" C: "); Serial.print(analogRead(A1));
   Serial.print(" R : "); Serial.print(analogRead(A2));
   Serial.print(" H : "); Serial.println(analogRead(A3));
@@ -86,47 +84,40 @@ void loop()
     // choose action based on sensors
     // 2^3 possible sensor combinations
     // For some of these the Hoorn doesn't matter
-    if(!hoornBlack() && !leftBlack() && !centerBlack() && !rightBlack()) {
-        Serial.print("____ ____  ____  ____\n");
-        if (memory == 1) {
-          rotateRight(20);
-          memory = 0;
-        } else if(memory == -1) {
-          rotateLeft(20);
-          memory = 0;
-        } 
-    }    
-    else if(hoornBlack() && !leftBlack() && !centerBlack() && !rightBlack()) {
-        Serial.print("HOORN ____  ____  ____\n");
-        forward(25);
+    if(!leftBlack() && !centerBlack() && !rightBlack()) {
+        Serial.print("____  ____  ____\n");
+        detachRobot();
     }
     else if(!leftBlack() && !centerBlack() && rightBlack()) {
       Serial.print("____  ____  RIGHT\n");
       rotateRight(45);
       forward(35);
-      memory = 1;
     }
       else if(!leftBlack() && centerBlack() && !rightBlack()) {
       Serial.print("____  CENTER  ____\n");
       forward(25);
-      memory = 0;
     }
     else if(!leftBlack() && centerBlack() && rightBlack()) {
       Serial.print("____  CENTER  RIGHT\n");
-      forward(5);
-      if(!(leftBlack() && centerBlack() && rightBlack())) {
+      if(!hoornBlack()) {
+        int count = 0;
         while(!(!leftBlack() && centerBlack() && !rightBlack()) || (leftBlack() && centerBlack() && !rightBlack())) {
+          if(count < 3 && hoornBlack()) {
+            break;
+          }
+          count++;
           turnRight();
           forward(20);
+          memory = 1;
         }
+      } else {
+        forward(25);
       }
-      memory = 1;
     }
     else if(leftBlack() && !centerBlack() && !rightBlack()) {
       Serial.print("LEFT  ____  ____\n");
       rotateLeft(45);
       forward(35);
-      memory = -1;
     }
     else if(leftBlack() && !centerBlack() && rightBlack()) {
       Serial.print("LEFT  ____  RIGHT\n");
@@ -134,32 +125,35 @@ void loop()
     }
     else if(leftBlack() && centerBlack() && !rightBlack()) {
       Serial.print("LEFT  CENTER  ____\n");
-      forward(5);
-      if(!(leftBlack() && centerBlack() && rightBlack())) {
+      if(!hoornBlack()) {
+        int count = 0;
         while(!(!leftBlack() && centerBlack() && !rightBlack()) || (!leftBlack() && centerBlack() && rightBlack())) {
+          if(count < 3 && hoornBlack()) {
+            break;
+          }
+          count++;
           turnLeft();
           forward(20);
+          memory = -1;
         }
-      }
-      memory = -1;
-    }
-    else if(hoornBlack() && leftBlack() && centerBlack() && rightBlack()) {
-      Serial.print("HOORN LEFT CENTER RIGHT\n");
-      forward(25);
-    }
-    else if(!hoornBlack() && leftBlack() && centerBlack() && rightBlack()) {
-      forward(25);
-      if (memory == 1) {
-        rotateRight(20);
-      } else if(memory == -1) {
-        rotateLeft(20);
       } else {
+        Serial.println("Forward");
+        forward(25);
+      }
+    }
+    else if(leftBlack() && centerBlack() && rightBlack()) {
+      Serial.print("LEFT CENTER RIGHT\n");
       forward(25);
-        if(leftBlack() && centerBlack() && rightBlack()) {
-           //If still black stop
-            detachRobot();
-            servo_enable = false;
-        } 
+    }
+    else if(leftBlack() && centerBlack() && rightBlack()) {
+      if(hoornBlack) {
+            forward(25);
+      } else if(memory == -1){
+        turnLeft();
+      } else if(memory == 1) {
+        turnRight();
+      } else {
+        detachRobot();
       }
     }
   }
@@ -210,6 +204,7 @@ void forward(int moveTime) {
   servoRight.write(0);
   delay(moveTime);
   detachRobot();
+  memory = 0;
 }
 
 void reverse(int moveTime) {
@@ -218,6 +213,7 @@ void reverse(int moveTime) {
   servoRight.write(180);
   delay(moveTime);
   detachRobot();
+  memory = 0;
 }
 
 /**
@@ -230,6 +226,7 @@ void turnRight() {
   servoRight.write(93);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  memory = 1;
 }
 
 /**
@@ -241,6 +238,7 @@ void turnLeft() {
   servoRight.write(0);
   delay(5*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  memory = -1;
 }
 
 /**
@@ -252,6 +250,7 @@ void rotateRight(int degree) {
   servoRight.write(93);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  memory = 1;
 }
 
 /**
@@ -263,11 +262,13 @@ void rotateLeft(int degree) {
   servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
+  memory = -1;
 }
 
 void detachRobot() {
   servoLeft.detach();
   servoRight.detach();
+  memory = 0;
 }
 
 void attachRobot(){
