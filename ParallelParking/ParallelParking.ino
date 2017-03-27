@@ -65,6 +65,21 @@ void loop()
     Serial.print("Foward distance: "); Serial.println(forwardDistance);
     Serial.print("Right distance: "); Serial.println(rightDistance);
 
+    /*
+     * Let's do 4 sensors!
+     * 1 forward
+     * 2 on the right
+     * 1 back
+     * 
+     * Having 2 on the right allows us to make sure we are parrallel to the wall at first. 
+     * Step 1, approach wall until a desired distance.
+     * Step 2, use both right sensors to rotate until parrallel.
+     * Step 3, move forward past the wall
+     * Step 4, rensure correct distance
+     * Step 5, park procedure
+     * Step 6, correct park job to be close to inside wall.
+     */
+
 
  //move forward
  if rightDistance > distanceThreshold{
