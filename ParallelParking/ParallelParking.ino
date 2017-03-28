@@ -19,8 +19,10 @@
  */
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
-Ultrasonic ultrasonicRight( 8, 11 );              // Trig then Echo pins
-Ultrasonic ultrasonicForward( 4, 5 );           
+Ultrasonic ultrasonicFront(2, 3);                 // Trig then Echo pins
+Ultrasonic ultrasonicRight1(4, 5);
+Ultrasonic ultrasonicRight2(6, 7); 
+Ultrasonic ultrasonicBack(8, 9);            
 
 int switch1 = 2;                                  // connect a push button switch between this pin and ground
 int ledpin = 13;                                  // internal led, external LED, relay, trigger for other function, some other device, whatever.
