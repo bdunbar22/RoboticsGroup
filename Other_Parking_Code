@@ -1,0 +1,197 @@
+int FRONT = 3;
+double front_val = 0;
+double front_distance = 0;
+int FRONT_RIGHT = 2;
+double front_right_val = 0;
+double front_right_distance = 0;
+int REAR = 4;
+double rear_val = 0;
+double rear_distance = 0;
+int REAR_RIGHT = 5;
+double rear_right_val = 0;
+double rear_right_distance = 0;
+
+int RIGHT = 1;
+double right_val = 0;
+double right_distance = 0;
+const int PulseWidth = 7;
+const int Direction = 8; //LOW is backward, HIGH is forward
+#include <Servo.h>
+Servo servo;
+
+void setup(){
+  Serial.begin(9600);
+  servo.attach(9);
+  pinMode(PulseWidth, OUTPUT);
+  pinMode(Direction, OUTPUT);
+  digitalWrite(PulseWidth, HIGH); 
+  
+ //sets intial front right distance and right distance
+  front_right_distance = frontRightDistance();
+  right_distance = rightDistance();
+//find parking space,assuming front of car is between two parked cars
+//stop when ready to begin reversing
+  while(!(front_right_distance < 9 && right_distance < 9 )){
+    front_right_distance = frontRightDistance();
+    right_distance = rightDistance();
+    servo.write(90);
+    forwardDrive();
+    }
+ //when ready to begin reversing, turn wheels to right
+  servo.write(180);
+ //reverse to the right
+ //stop when rear right corner is close to curb
+ rear_right_distance = rearRightDistance();
+ while(!(rear_right_distance < 7))
+ {
+ rear_right_distance = rearRightDistance();
+ reverseTurn();
+ }
+ //turn wheels left
+ servo.write(0);
+ //reverse straight backwards
+ //stop before rear hits rear car
+ rear_distance = rearDistance();
+
+ while(!(rear_distance < 4))
+ {
+ rear_distance = rearDistance();
+ reverseTurn();
+ }
+
+ //turn wheels back to center
+ servo.write(90);
+}
+void loop()
+{
+}
+double frontDistance()
+{
+ front_val = analogRead(FRONT);
+
+if(front_val >= 87 && front_val <= 139)
+ {
+ front_distance = -0.1724 * front_val + 40.52;
+ }
+ else if(front_val > 139 && front_val <= 260)
+ {
+ front_distance = -0.06306 * front_val + 25.16;
+ }
+ else
+ {
+ front_distance = -0.01615 * front_val + 12.42;
+ }
+ Serial.print(“FRONT: “);
+ Serial.println(front_distance);
+ return front_distance;
+}
+double frontRightDistance()
+{
+ front_right_val = analogRead(FRONT_RIGHT);
+ if(front_right_val >= 87 && front_right_val <= 139)
+ {
+ front_right_distance = -0.1724 * front_right_val + 40.52;
+ }
+ else if(front_right_val > 139 && front_right_val <= 260)
+ {
+ front_right_distance = -0.06306 * front_right_val + 25.16;
+ }
+ else
+ {
+ front_right_distance = -0.01615 * front_right_val + 12.42;
+ }
+ Serial.print(“FRONT RIGHT: “);
+ Serial.println(front_right_distance); 
+return front_right_distance;
+}
+double rearDistance()
+{
+ rear_val = analogRead(REAR);
+ if(rear_val >= 87 && rear_val <= 139)
+ {
+ rear_distance = -0.1724 * rear_val + 40.52;
+ }
+ else if(rear_val > 139 && rear_val <= 260)
+ {
+ rear_distance = -0.06306 * rear_val + 25.16;
+ }
+ else
+ {
+ rear_distance = -0.01615 * rear_val + 12.42;
+ }
+ Serial.print(“REAR: “);
+ Serial.println(rear_distance);
+ return rear_distance;
+}
+double rearRightDistance()
+{
+ rear_right_val = analogRead(REAR_RIGHT);
+ if(rear_right_val >= 87 && rear_right_val <= 139)
+ {
+ rear_right_distance = -0.1724 * rear_right_val + 40.52;
+ }
+ else if(rear_right_val > 139 && rear_right_val <= 260)
+ {
+ rear_right_distance = -0.06306 * rear_right_val + 25.16;
+ }
+
+else
+ {
+ rear_right_distance = -0.01615 * rear_right_val + 12.42;
+ }
+ Serial.print(“REAR RIGHT: “);
+ Serial.println(rear_right_distance);
+ return rear_right_distance;
+}
+double rightDistance()
+{
+ right_val = analogRead(RIGHT);
+ if(right_val >= 87 && right_val <= 139)
+ {
+ right_distance = -0.1724 * right_val + 40.52;
+ }
+ else if(right_val > 139 && right_val <= 260)
+ {
+ right_distance = -0.06306 * right_val + 25.16;
+ }
+ else
+ {
+ right_distance = -0.01615 * right_val + 12.42;
+ }
+ Serial.print(“RIGHT: “);
+ Serial.println(right_distance);
+ return right_distance;
+}
+/**
+Moves forward with wheels at low speed
+**/
+void forwardDrive()
+{
+ digitalWrite(Direction, HIGH);
+ digitalWrite(PulseWidth, HIGH);
+ delay(15);
+ digitalWrite(PulseWidth, LOW);
+ delay(100);
+}
+/**
+Reverses with wheels at low speed
+**/
+void reverseDrive()
+{
+ digitalWrite(Direction, LOW);
+ digitalWrite(PulseWidth, HIGH);
+ delay(15);
+ digitalWrite(PulseWidth, LOW);
+ delay(100);
+}
+/**
+Reverses with wheels at high speed
+**/
+void reverseTurn()
+{
+ digitalWrite(Direction, LOW);
+ digitalWrite(PulseWidth, HIGH);
+ delay(25);
+ digitalWrite(PulseWidth, LOW);
+ delay(100);
+} 
