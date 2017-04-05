@@ -33,18 +33,18 @@
  */
 #define CM 1
 
-const int SERVO_RIGHT_PIN = 2;
-const int SERVO_LEFT_PIN = 3; 
+const int SERVO_RIGHT_PIN = 12;
+const int SERVO_LEFT_PIN = 13; 
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
 const float distanceThreshold = 20;               //20cm
  
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
 
-Ultrasonic ultrasonicFront(6, 5);                 // Trig then Echo pins
-Ultrasonic ultrasonicRight1(8, 7);
-Ultrasonic ultrasonicRight2(10, 9); 
-Ultrasonic ultrasonicBack(12, 11);            
+Ultrasonic ultrasonicFront(10, 11);                 // Trig then Echo pins
+Ultrasonic ultrasonicRight1(8, 9);
+Ultrasonic ultrasonicRight2(6, 7); 
+Ultrasonic ultrasonicBack(4, 5);            
 
 boolean flag = false;
 boolean servo_enable = false;
@@ -89,7 +89,8 @@ void loop()
     Serial.print("    Back: "); Serial.println(backDistance);
 
 
-    forward(30);
+    //forward(50);
+    //Serial.println("Move Foward.");
     delay(100);
     /*
      * Let's do 4 sensors!
@@ -227,6 +228,8 @@ void detachRobot() {
 }
 
 void attachRobot(){
-  servoLeft.attach(10);  
-  servoRight.attach(9); 
+  servoLeft.attach(SERVO_LEFT_PIN);  
+  servoRight.attach(SERVO_RIGHT_PIN); 
 }
+
+
