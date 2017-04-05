@@ -84,10 +84,10 @@ void loop()
     rightDistance1 = ultrasonicRight2.Ranging(CM);
     forwardDistance = ultrasonicFront.Ranging(CM);
     backDistance = ultrasonicBack.Ranging(CM);
-    Serial.print("Foward distance: "); Serial.println(forwardDistance);
-    Serial.print("Right distance1: "); Serial.println(rightDistance1);
-    Serial.print("Right distance2: "); Serial.println(rightDistance2);
-    Serial.print("Back distance2: "); Serial.println(backDistance);
+    Serial.print("Foward: "); Serial.print(forwardDistance);
+    Serial.print("    Right_one: "); Serial.print(rightDistance1);
+    Serial.print("    Right_two: "); Serial.print(rightDistance2);
+    Serial.print("    Back: "); Serial.println(backDistance);
 
 
 
