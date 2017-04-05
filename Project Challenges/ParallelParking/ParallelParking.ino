@@ -60,11 +60,10 @@ float distBuff = 1; // distance buffer
 
 /* ==============================================================================================================================================
  * Setup
+ * Setup will also run the full Parallel Parking procedure as we don't want to continuously park in new spots over time.
  */
 void setup()
 {
-//  pinMode(ledpin,OUTPUT);                         // this pin controlled by flipflop() function
-//  pinMode (switch1,INPUT_PULLUP);                 // keeps pin HIGH via internal pullup resistor unless brought LOW with switch
   Serial.begin(9600);                             // just for debugging, not needed.
 }
 
@@ -90,7 +89,8 @@ void loop()
     Serial.print("    Back: "); Serial.println(backDistance);
 
 
-
+    forward(30);
+    delay(100);
     /*
      * Let's do 4 sensors!
      * 1 forward
