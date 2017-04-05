@@ -81,7 +81,7 @@ void loop()
 */
 //  if (servo_enable){
     rightDistance1 = ultrasonicRight1.Ranging(CM);
-    rightDistance1 = ultrasonicRight2.Ranging(CM);
+    rightDistance2 = ultrasonicRight2.Ranging(CM);
     forwardDistance = ultrasonicFront.Ranging(CM);
     backDistance = ultrasonicBack.Ranging(CM);
     Serial.print("Foward: "); Serial.print(forwardDistance);
