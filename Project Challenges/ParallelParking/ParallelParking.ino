@@ -68,17 +68,20 @@ void setup()
   
   // Start Serial for debugging
   Serial.begin(9600);        
+  
+  // Wait for button to start
   int button = digitalRead(PUSH_BUTTON);
   Serial.println(button);
-  // Start when push button is pushed
+
   while(button == LOW) {
      button = digitalRead(PUSH_BUTTON);
-//     Serial.println(button);
+     Serial.println(button);
      reverseLightOn();
      delay(100);
      reverseLightOff();
      delay(100);
   }
+  
   // Run parallel park procedures.
   parallelPark();                     
 }
@@ -87,7 +90,7 @@ void parallelPark()
 {
   beep();
 
-  // Step 
+  // Step 1 
   // Go forward to first box
   forward();
   updateDistances();
@@ -98,14 +101,7 @@ void parallelPark()
 
   // Step 
   // align
-  while(rightFront != rightBack) {
-    int align = rightFront - rightBack;
-    if(align > 0) {
-      //rotateRight
-    } else if(align < 0) {
-      //rotateLeft
-    }
-  }
+  align();
 
   
   
@@ -131,6 +127,20 @@ void parallelPark()
 
   // Step  
   // Leave course
+}
+
+/* ==============================================================================================================================================
+ * Complex Robot Movement
+ */
+void align() {
+    while(Math.abs(rightFront - rightBack) > 1) {
+    int align = rightFront - rightBack;
+    if(align > 0) {
+      rotateRight(10);
+    } else if(align < 0) {
+      rotateLeft(10);
+    }
+  }
 }
 
 /* ==============================================================================================================================================
