@@ -170,19 +170,27 @@ void reverseLightOff() {
 }
 
 /* ========================================== MOTION ==========================================*/
-void forward(int moveTime) {
+void forward() {
   attachRobot();
   servoLeft.write(180);
   servoRight.write(0);
-  delay(moveTime);
-  detachRobot();
 }
 
-void reverse(int moveTime) {
+void reverse() {
   attachRobot();
   servoLeft.write(0);
   servoRight.write(180);
-  delay(moveTime);
+}
+
+/**
+ * While moving forward, turn a few degrees to the right
+ * debugged for a small angle
+ */
+void turnRight(int degree) {
+  attachRobot();
+  servoLeft.write(93);
+  servoRight.write(180);
+  delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
 
@@ -190,22 +198,11 @@ void reverse(int moveTime) {
  * While moving forward, turn a few degrees to the right
  * debugged for a small angle
  */
-void turnRight() {
-  attachRobot();
-  servoLeft.write(93);
-  servoRight.write(180);
-  delay(5*ANGLE_TO_TIME_MULTIPLIER);
-  detachRobot();
-}
-
-/**
- * Rotate in place
- */
-void turnLeft() {
+void turnLeft(int degree) {
   attachRobot();
   servoLeft.write(0);
   servoRight.write(93);
-  delay(5*ANGLE_TO_TIME_MULTIPLIER);
+  delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
 
@@ -228,6 +225,10 @@ void rotateLeft(int degree) {
   servoLeft.write(0);
   servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
+}
+
+void stopRobot() {
   detachRobot();
 }
 
