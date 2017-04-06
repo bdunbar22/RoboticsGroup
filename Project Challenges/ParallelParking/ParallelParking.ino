@@ -82,6 +82,7 @@ void parallelPark()
   while(rightFront > 20 && rightBack > 20) {
     updateDistances();
   }
+  stopRobot();
 
   // Step 
   // align
