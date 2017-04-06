@@ -53,9 +53,6 @@ long rightFront;
 long rightBack;
 long back;
 
-int distanceCounter = 0; 
-int lengthCounter = 30; //idk come up with the length
-float distBuff = 1; // distance buffer
 
 /* ==============================================================================================================================================
  * Setup
@@ -63,16 +60,20 @@ float distBuff = 1; // distance buffer
  */
 void setup()
 {
-  //SET PINS
+  // SET PINS
   pinMode (BUZZER_PIN, OUTPUT);
   pinMode (BRAKE_LIGHT_PIN, OUTPUT);
-  beep();
-  Serial.begin(9600);                             // just for debugging, not needed.
-
-
-
-
   
+  // Start Serial for debugging
+  Serial.begin(9600);        
+
+  // Run parallel park procedures.
+  parallelPark();                     
+}
+
+void parallelPark() 
+{
+  beep();
 }
 
 /* ==============================================================================================================================================
@@ -80,70 +81,12 @@ void setup()
  */
 void loop()
 {
-
-
-//    rightDistance1 = ultrasonicRight1.Ranging(CM);
-//    rightDistance2 = ultrasonicRight2.Ranging(CM);
-//    forwardDistance = ultrasonicFront.Ranging(CM);
-//    backDistance = ultrasonicBack.Ranging(CM);
+    // No movement. Can still debug    
     updateDistances();
-    Serial.print("Front: "); Serial.print(front);
-    Serial.print("    rightFront: "); Serial.print(rightFront);
-    Serial.print("    rightBack: "); Serial.print(rightBack);
-    Serial.print("    Back: "); Serial.println(back);
+    printData();
 
-
-    //forward(50);
-    //Serial.println("Move Foward.");
-    delay(100);
-    /*
-     * Let's do 4 sensors!
-     * 1 forward
-     * 2 on the right
-     * 1 back
-     * 
-     * Having 2 on the right allows us to make sure we are parrallel to the wall at first. 
-     * Step 1, approach wall until a desired distance.
-     * Step 2, use both right sensors to rotate until parrallel.
-     * Step 3, move forward past the wall
-     * Step 4, re-ensure correct distance
-     * Step 5, park procedure
-     * Step 6, correct park job to be close to inside wall.
-     */
-
-
- //move forward
- /*
- if rightDistance > distanceThreshold{
-   distanceCounter++
-   wallDistance = rightDistance;
-   }
-  if (distanceCounter < lengthCounter && rightDistance < wallDistance + distBuff){
-    distanceCounter = 0;    
-  }
-  if distanceCounter > lengthCounter{
-   //begin parallel park
-
-     if (right distance <= wallDistance + distBuff){
-       forward(500); //length of car
-       reverse(500);
-       turnRight(); //45 degrees
-       reverse(500);
-       turnLeft();// 45 degrees
-     }
-   }
-
-    lastRightDistance = rightDistance;
-    
-  }
-  else{
-    detachRobot();
-  }
-  */
-
-  delay(3); // Try not to draw too much power
-  //Serial.println("End of loop");
-}                                                 // end of main loop.
+    delay(50);
+}                                                 
 
 /* ==============================================================================================================================================
  * Functions
@@ -167,6 +110,13 @@ void fetchDistances() {
 
 bool isBadDistance() {
   return (rightFront > 3000 || rightBack > 3000 || front > 3000 || back > 3000);
+}
+
+void printData() {
+  Serial.print("Front: "); Serial.print(front);
+  Serial.print("    rightFront: "); Serial.print(rightFront);
+  Serial.print("    rightBack: "); Serial.print(rightBack);
+  Serial.print("    Back: "); Serial.println(back);
 }
 
 /* ========================================== NOISE ==========================================*/
