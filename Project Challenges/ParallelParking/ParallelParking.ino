@@ -1,8 +1,3 @@
-
-
-
-
-
 /* ==============================================================================================================================================
  * Ben Dunbar, Gareth Moo, Eric Shi
  * 
@@ -41,19 +36,17 @@ const int SERVO_RIGHT_PIN = 12;
 const int SERVO_LEFT_PIN = 13; 
 const int BUZZER_PIN = 3;
 const int BRAKE_LIGHT_PIN = 2;
+
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
-const float DISTANCE_THRESHHOLD = 20;               //20cm
+const float DISTANCE_THRESHHOLD = 20;             //20cm
  
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
 
-Ultrasonic ultrasonicFront(10, 11);                 // Trig then Echo pins
+Ultrasonic ultrasonicFront(10, 11);               // Trig then Echo pins
 Ultrasonic ultrasonicRightFront(8, 9);
 Ultrasonic ultrasonicRightBack(6, 7); 
 Ultrasonic ultrasonicBack(4, 5);            
-
-boolean flag = false;
-boolean servo_enable = false;
 
 long front;
 long rightFront;
@@ -75,6 +68,11 @@ void setup()
   pinMode (BRAKE_LIGHT_PIN, OUTPUT);
   beep();
   Serial.begin(9600);                             // just for debugging, not needed.
+
+
+
+
+  
 }
 
 /* ==============================================================================================================================================
@@ -82,13 +80,8 @@ void setup()
  */
 void loop()
 {
-  /* 
-  if (digitalRead(switch1)==HIGH){
-    delay(5); 
-    flipflop(); 
-  }
-*/
-//  if (servo_enable){
+
+
 //    rightDistance1 = ultrasonicRight1.Ranging(CM);
 //    rightDistance2 = ultrasonicRight2.Ranging(CM);
 //    forwardDistance = ultrasonicFront.Ranging(CM);
@@ -155,7 +148,7 @@ void loop()
 /* ==============================================================================================================================================
  * Functions
  */
-
+/* ========================================== DATA ==========================================*/
 void updateDistances() {
     fetchDistances();
 
@@ -176,15 +169,23 @@ bool isBadDistance() {
   return (rightFront > 3000 || rightBack > 3000 || front > 3000 || back > 3000);
 }
 
-
+/* ========================================== NOISE ==========================================*/
 void beep() {
-  digitalWrite(BRAKE_LIGHT_PIN, HIGH);
   tone(BUZZER_PIN, 100, 300);  
   delay(600);
   tone(BUZZER_PIN, 100, 700); 
+  }
+
+/* ========================================== LIGHTS ==========================================*/
+void brakeLightOn() {
+  digitalWrite(BRAKE_LIGHT_PIN, HIGH);
+}
+
+void brakeLightOff() {
   digitalWrite(BRAKE_LIGHT_PIN, LOW);
 }
 
+/* ========================================== MOTION ==========================================*/
 void forward(int moveTime) {
   attachRobot();
   servoLeft.write(180);
@@ -246,6 +247,8 @@ void rotateLeft(int degree) {
   detachRobot();
 }
 
+
+/* ========================================== MOTOR CONFIG ==========================================*/
 void detachRobot() {
   servoLeft.detach();
   servoRight.detach();
