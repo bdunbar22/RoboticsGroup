@@ -35,7 +35,7 @@
 const int SERVO_RIGHT_PIN = 12;
 const int SERVO_LEFT_PIN = 13; 
 const int BUZZER_PIN = 3;
-const int BRAKE_LIGHT_PIN = 2;
+const int REVERSE_LIGHT_PIN = 2;
 
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
 const float DISTANCE_THRESHHOLD = 20;             //20cm
@@ -62,7 +62,7 @@ void setup()
 {
   // SET PINS
   pinMode (BUZZER_PIN, OUTPUT);
-  pinMode (BRAKE_LIGHT_PIN, OUTPUT);
+  pinMode (REVERSE_LIGHT_PIN, OUTPUT);
   
   // Start Serial for debugging
   Serial.begin(9600);        
@@ -74,6 +74,40 @@ void setup()
 void parallelPark() 
 {
   beep();
+
+  // Step 
+  // Go forward to first box
+  forward();
+  updateDistances();
+  while(rightFront > 20 && rightBack > 20) {
+    updateDistances();
+  }
+
+  // Step 
+  // align
+
+  // Step 
+  // Go all the way past gap to next box
+
+  // Step 
+  // Re align
+
+  // Step 
+  // Back up slightly
+  reverseLightOn();
+
+  // Step  
+  // Turn and go into spot
+
+  // Step 
+  // Adjust in spot
+
+  // Step 
+  // Leave spot
+  reverseLightOff();
+
+  // Step  
+  // Leave course
 }
 
 /* ==============================================================================================================================================
@@ -81,7 +115,7 @@ void parallelPark()
  */
 void loop()
 {
-    // No movement. Can still debug    
+    // No movement. Can still test out distances    
     updateDistances();
     printData();
 
@@ -127,12 +161,12 @@ void beep() {
   }
 
 /* ========================================== LIGHTS ==========================================*/
-void brakeLightOn() {
-  digitalWrite(BRAKE_LIGHT_PIN, HIGH);
+void reverseLightOn() {
+  digitalWrite(REVERSE_LIGHT_PIN, HIGH);
 }
 
-void brakeLightOff() {
-  digitalWrite(BRAKE_LIGHT_PIN, LOW);
+void reverseLightOff() {
+  digitalWrite(REVERSE_LIGHT_PIN, LOW);
 }
 
 /* ========================================== MOTION ==========================================*/
