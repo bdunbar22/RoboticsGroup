@@ -36,6 +36,7 @@ const int SERVO_RIGHT_PIN = 12;
 const int SERVO_LEFT_PIN = 13; 
 const int BUZZER_PIN = 3;
 const int REVERSE_LIGHT_PIN = 2;
+const int PUSH_BUTTON = 14;
 
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
 const float DISTANCE_THRESHHOLD = 20;             //20cm
@@ -63,10 +64,21 @@ void setup()
   // SET PINS
   pinMode (BUZZER_PIN, OUTPUT);
   pinMode (REVERSE_LIGHT_PIN, OUTPUT);
+  pinMode (PUSH_BUTTON, INPUT);
   
   // Start Serial for debugging
   Serial.begin(9600);        
-
+  int button = digitalRead(PUSH_BUTTON);
+  Serial.println(button);
+  // Start when push button is pushed
+  while(button == LOW) {
+     button = digitalRead(PUSH_BUTTON);
+//     Serial.println(button);
+     reverseLightOn();
+     delay(100);
+     reverseLightOff();
+     delay(100);
+  }
   // Run parallel park procedures.
   parallelPark();                     
 }
@@ -79,14 +91,24 @@ void parallelPark()
   // Go forward to first box
   forward();
   updateDistances();
-  while(rightFront > 20 && rightBack > 20) {
+  while(rightFront > 20 || rightBack > 20) {
     updateDistances();
   }
   stopRobot();
 
   // Step 
   // align
+  while(rightFront != rightBack) {
+    int align = rightFront - rightBack;
+    if(align > 0) {
+      //rotateRight
+    } else if(align < 0) {
+      //rotateLeft
+    }
+  }
 
+  
+  
   // Step 
   // Go all the way past gap to next box
 
