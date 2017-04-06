@@ -1,4 +1,8 @@
 
+
+
+
+
 /* ==============================================================================================================================================
  * Ben Dunbar, Gareth Moo, Eric Shi
  * 
@@ -25,7 +29,7 @@
  * Includes 
  */
 #include <Servo.h>
-#include "Ultrasonic.h"
+#include <Ultrasonic.h>
 
 
 /* ==============================================================================================================================================
@@ -35,24 +39,26 @@
 
 const int SERVO_RIGHT_PIN = 12;
 const int SERVO_LEFT_PIN = 13; 
+const int BUZZER_PIN = 3;
+const int BRAKE_LIGHT_PIN = 2;
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
-const float distanceThreshold = 20;               //20cm
+const float DISTANCE_THRESHHOLD = 20;               //20cm
  
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
 
 Ultrasonic ultrasonicFront(10, 11);                 // Trig then Echo pins
-Ultrasonic ultrasonicRight1(8, 9);
-Ultrasonic ultrasonicRight2(6, 7); 
+Ultrasonic ultrasonicRightFront(8, 9);
+Ultrasonic ultrasonicRightBack(6, 7); 
 Ultrasonic ultrasonicBack(4, 5);            
 
 boolean flag = false;
 boolean servo_enable = false;
 
-long forwardDistance;
-long rightDistance1;
-long rightDistance2;
-long backDistance;
+long front;
+long rightFront;
+long rightBack;
+long back;
 
 int distanceCounter = 0; 
 int lengthCounter = 30; //idk come up with the length
@@ -64,6 +70,10 @@ float distBuff = 1; // distance buffer
  */
 void setup()
 {
+  //SET PINS
+  pinMode (BUZZER_PIN, OUTPUT);
+  pinMode (BRAKE_LIGHT_PIN, OUTPUT);
+  beep();
   Serial.begin(9600);                             // just for debugging, not needed.
 }
 
@@ -79,14 +89,15 @@ void loop()
   }
 */
 //  if (servo_enable){
-    rightDistance1 = ultrasonicRight1.Ranging(CM);
-    rightDistance2 = ultrasonicRight2.Ranging(CM);
-    forwardDistance = ultrasonicFront.Ranging(CM);
-    backDistance = ultrasonicBack.Ranging(CM);
-    Serial.print("Foward: "); Serial.print(forwardDistance);
-    Serial.print("    Right_one: "); Serial.print(rightDistance1);
-    Serial.print("    Right_two: "); Serial.print(rightDistance2);
-    Serial.print("    Back: "); Serial.println(backDistance);
+//    rightDistance1 = ultrasonicRight1.Ranging(CM);
+//    rightDistance2 = ultrasonicRight2.Ranging(CM);
+//    forwardDistance = ultrasonicFront.Ranging(CM);
+//    backDistance = ultrasonicBack.Ranging(CM);
+    updateDistances();
+    Serial.print("Front: "); Serial.print(front);
+    Serial.print("    rightFront: "); Serial.print(rightFront);
+    Serial.print("    rightBack: "); Serial.print(rightBack);
+    Serial.print("    Back: "); Serial.println(back);
 
 
     //forward(50);
@@ -144,23 +155,36 @@ void loop()
 /* ==============================================================================================================================================
  * Functions
  */
-/*void flipflop(){                                        //funtion flipflop 
-  flag = !flag;                                         // since we are here, the switch was pressed So FLIP the boolian "flag" state 
-                                                        //    (we don't even care if switch was released yet)
-  Serial.print("flag =   " );   Serial.println(flag);   // not needed, but may help to see what's happening.
 
-  if (flag){
-    digitalWrite(ledpin,HIGH );                         // if the flag var is HIGH turn the pin on
-    servo_enable = true;
-  }
-  else {
-    servo_enable = false;
-    digitalWrite(ledpin,LOW);                           // if the flag var is LOW turn the pin off 
-  }
-  
-  while(digitalRead(switch1)==HIGH);                     // for "slow" button release, keeps us in the function until button is UN-pressed
+void updateDistances() {
+    fetchDistances();
+
+    //Update again on error
+    while(isBadDistance()) {
+      fetchDistances();
+    }
 }
-*/
+
+void fetchDistances() {
+    rightFront = ultrasonicRightFront.Ranging(CM);
+    rightBack = ultrasonicRightBack.Ranging(CM);
+    front = ultrasonicFront.Ranging(CM);
+    back = ultrasonicBack.Ranging(CM);
+}
+
+bool isBadDistance() {
+  return (rightFront > 3000 || rightBack > 3000 || front > 3000 || back > 3000);
+}
+
+
+void beep() {
+  digitalWrite(BRAKE_LIGHT_PIN, HIGH);
+  tone(BUZZER_PIN, 100, 300);  
+  delay(600);
+  tone(BUZZER_PIN, 100, 700); 
+  digitalWrite(BRAKE_LIGHT_PIN, LOW);
+}
+
 void forward(int moveTime) {
   attachRobot();
   servoLeft.write(180);
