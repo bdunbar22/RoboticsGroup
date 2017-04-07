@@ -39,7 +39,7 @@ const int REVERSE_LIGHT_PIN = 2;
 const int PUSH_BUTTON = 14;
 
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
-const float DISTANCE_THRESHHOLD = 19;             //25cm
+const float DISTANCE_THRESHHOLD = 21;             //25cm
 const float PROXIMITY_THRESHHOLD = 10;
  
 Servo servoLeft;                                  // Define left servo
@@ -95,7 +95,7 @@ void parallelPark()
   // Don't allow too close to next wall
   if((rightFront + rightBack) / 2 < PROXIMITY_THRESHHOLD) {
     Serial.println("Adjust for proximity");
-    rotateLeft(4); 
+    rotateLeft(6); 
   }
   
   // Step 
@@ -214,20 +214,22 @@ void park() {
     updateDistances();
     delay(5);
   }
-  delay(175);
+  delay(150);
   stopRobot();
   
   // Step  
   // Turn
-  turnLeftReverse(60);
+  turnLeftReverse(65);
   
   // Step  
   // go into spot
   reverse();
   updateDistances();
-  while(back > 13 && back < 3000) {
+  while(back > 19 && back < 3000) {
     updateDistances();
+    delay(5);
   }
+  delay(100);
   Serial.println("END OF PARK REVERSE");
   updateDistances();
   printDistances();
@@ -253,13 +255,13 @@ void park() {
 }
 
 void unPark() {
-  rotateLeft(65);
+  rotateLeft(70);
 
   forward();
-  delay(550);
+  delay(700);
   stopRobot();
   
-  turnRight(140);
+  turnRight(130);
   
   forward();
   delay(400);
