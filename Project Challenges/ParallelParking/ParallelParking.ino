@@ -225,7 +225,7 @@ void park() {
   // go into spot
   reverse();
   updateDistances();
-  while(rightFront > DISTANCE_THRESHHOLD) {
+  while(back > 20) {
     updateDistances();
     delay(5);
   }
