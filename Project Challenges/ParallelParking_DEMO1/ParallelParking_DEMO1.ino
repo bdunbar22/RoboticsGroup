@@ -160,7 +160,7 @@ void approachBox() {
       delay(5);
     }
   }
-  delay(500);
+  delay(475);
   stopRobot();
 }
 
@@ -247,10 +247,10 @@ void park() {
 }
 
 void unPark() {
-  turnLeft(90);
+  turnLeft(100);
 
   forward();
-  delay(650);
+  delay(700);
   stopRobot();
   
   turnRight(100);
@@ -259,7 +259,7 @@ void unPark() {
   delay(400);
   stopRobot();
 
-  turnRight(30);
+  turnRight(32);
   
   forward();
   delay(200);
