@@ -39,7 +39,8 @@ const int REVERSE_LIGHT_PIN = 2;
 const int PUSH_BUTTON = 14;
 
 const float ANGLE_TO_TIME_MULTIPLIER = 7.8;       //degrees * milliseconds/degrees = milliseconds to run 
-const float DISTANCE_THRESHHOLD = 20;             //20cm
+const float DISTANCE_THRESHHOLD = 21;             //25cm
+const float PROXIMITY_THRESHHOLD = 10;
  
 Servo servoLeft;                                  // Define left servo
 Servo servoRight;                                 // Define right servo
@@ -69,6 +70,66 @@ void setup()
   // Start Serial for debugging
   Serial.begin(9600);        
   
+  // Run parallel park procedures.
+  start();
+  //approachWallBack();
+  //park();
+  parallelPark();                     
+}
+
+void parallelPark() 
+{
+  start();
+  
+  beep();
+
+  // Step 1 
+  // Go forward to first box
+  approachBox();
+
+  // Step 
+  // align
+  align();
+
+  // Step
+  // Don't allow too close to next wall
+  if((rightFront + rightBack) / 2 < PROXIMITY_THRESHHOLD) {
+    Serial.println("Adjust for proximity");
+    rotateLeft(6); 
+  }
+  
+  // Step 
+  // Go all the way past gap to next box
+  approachGap();
+  approachBox();
+
+  // Step 
+  // Re align
+  align();
+
+
+  // Step
+  // Perform Park
+  park();
+
+  
+  // Step 
+  // Leave spot
+  unPark();
+
+  // Step  
+  // Leave course
+  approachGap();
+  forward();
+  delay(500);
+  stopRobot();
+  beep();
+}
+
+/* ==============================================================================================================================================
+ * Complex Robot Movement
+ */
+void start() {
   // Wait for button to start
   int button = digitalRead(PUSH_BUTTON);
   Serial.println(button);
@@ -80,79 +141,153 @@ void setup()
      delay(100);
      reverseLightOff();
      delay(100);
+     updateDistances();
+     printDistances();
   }
-  
-  // Run parallel park procedures.
-  parallelPark();                     
+  delay(25);
 }
 
-void parallelPark() 
-{
-  beep();
+void approachBox() {
+  forward();
+  for(int i = 0; i < 3; i++) {
+    Serial.print("Start Approach Box: "); Serial.println(i);
+    updateDistances();
+    printDistances();
+    while(rightFront > DISTANCE_THRESHHOLD || rightBack > DISTANCE_THRESHHOLD) {
+      Serial.println("Approach Box 1");
+      updateDistances();
+      printDistances();
+      delay(5);
+    }
+  }
+  delay(500);
+  stopRobot();
+}
 
-  // Step 1 
-  // Go forward to first box
+void approachGap() {
   forward();
   updateDistances();
-  while(rightFront > 20 || rightBack > 20) {
+  while(rightFront < DISTANCE_THRESHHOLD || rightBack < DISTANCE_THRESHHOLD) {
     updateDistances();
+    Serial.println("Approach Gap");
+    printDistances();
+    delay(5);
   }
-  stopRobot();
+}
+ 
+void align() {
+  delay(100);
+  updateDistances();
+  int count = 0;
+  while(!(rightFront == rightBack || rightFront - rightBack == 1)) {
+    count++;
+    if(count > 2) {
+      forward();
+      delay(20);
+      stopRobot();
+    }
+    Serial.println("Aligning 1");
+    int align = rightFront - rightBack;
+    if(align > 0) {
+      rotateRight(4);
+    } else if(align < 0) {
+      rotateLeft(4);
+    }
+    delay(100);
+    updateDistances();
+    printDistances();
+    Serial.println("Aligning 2");
+  }
+}
 
-  // Step 
-  // align
+void park() {
   align();
-
-  
-  
-  // Step 
-  // Go all the way past gap to next box
-
-  // Step 
-  // Re align
-
+  while((rightFront + rightBack) / 2 > 10) {
+    approachWallBack();
+  }
   // Step 
   // Back up slightly
   reverseLightOn();
-
-  // Step  
-  // Turn and go into spot
-
-  // Step 
-  // Adjust in spot
-
-  // Step 
-  // Leave spot
-  reverseLightOff();
-
-  // Step  
-  // Leave course
-}
-
-/* ==============================================================================================================================================
- * Complex Robot Movement
- */
-void align() {
-    while(Math.abs(rightFront - rightBack) > 1) {
-    int align = rightFront - rightBack;
-    if(align > 0) {
-      rotateRight(10);
-    } else if(align < 0) {
-      rotateLeft(10);
-    }
+  reverse();
+  updateDistances();
+  while(rightBack < DISTANCE_THRESHHOLD) {
+    updateDistances();
+    delay(5);
   }
+  delay(300);
+  stopRobot();
+  
+  // Step  
+  // Turn
+  turnLeftReverse(75);
+  
+  // Step  
+  // go into spot
+  reverse();
+  updateDistances();
+  while(rightFront > DISTANCE_THRESHHOLD) {
+    updateDistances();
+    delay(5);
+  }
+  delay(150);
+  Serial.println("END OF PARK REVERSE");
+  updateDistances();
+  printDistances();
+  stopRobot();
+
+  // Step  
+  // Correction Turn
+  turnRightReverse(75);
+
+  // Step
+  // Fix park job
+  align();
+  beep();
+  reverseLightOff();
 }
+
+void unPark() {
+  turnLeft(90);
+
+  forward();
+  delay(650);
+  stopRobot();
+  
+  turnRight(100);
+  
+  forward();
+  delay(500);
+  stopRobot();
+  
+  align();
+}
+
+void approachWallBack() {
+  reverseLightOn();
+  turnLeftReverse(60);
+  reverse();
+  delay(20);
+  turnRightReverse(80);
+  delay(50);
+  reverseLightOff();
+  forward();
+  delay(400);
+  stopRobot();
+  align();
+  Serial.println("Approached wall");
+  updateDistances();
+  printDistances();
+}
+
 
 /* ==============================================================================================================================================
  * Loop
  */
 void loop()
 {
-    // No movement. Can still test out distances    
-    updateDistances();
-    printData();
-
-    delay(50);
+  updateDistances();
+  printDistances();
+  delay(50);
 }                                                 
 
 /* ==============================================================================================================================================
@@ -179,7 +314,7 @@ bool isBadDistance() {
   return (rightFront > 3000 || rightBack > 3000 || front > 3000 || back > 3000);
 }
 
-void printData() {
+void printDistances() {
   Serial.print("Front: "); Serial.print(front);
   Serial.print("    rightFront: "); Serial.print(rightFront);
   Serial.print("    rightBack: "); Serial.print(rightBack);
@@ -191,7 +326,8 @@ void beep() {
   tone(BUZZER_PIN, 100, 300);  
   delay(600);
   tone(BUZZER_PIN, 100, 700); 
-  }
+  delay(100);
+}
 
 /* ========================================== LIGHTS ==========================================*/
 void reverseLightOn() {
@@ -221,20 +357,20 @@ void reverse() {
  */
 void turnRight(int degree) {
   attachRobot();
-  servoLeft.write(93);
-  servoRight.write(180);
+  servoLeft.write(180);
+  servoRight.write(93);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
 
 /**
- * While moving forward, turn a few degrees to the right
+ * While moving forward, turn a few degrees to the left
  * debugged for a small angle
  */
 void turnLeft(int degree) {
   attachRobot();
-  servoLeft.write(0);
-  servoRight.write(93);
+  servoLeft.write(93);
+  servoRight.write(0);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
@@ -257,6 +393,31 @@ void rotateLeft(int degree) {
   attachRobot();
   servoLeft.write(0);
   servoRight.write(0);
+  delay(degree*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
+}
+
+
+/**
+ * While moving reverse, turn a few degrees to the right
+ * debugged for a small angle
+ */
+void turnRightReverse(int degree) {
+  attachRobot();
+  servoLeft.write(93);
+  servoRight.write(180);
+  delay(degree*ANGLE_TO_TIME_MULTIPLIER);
+  detachRobot();
+}
+
+/**
+ * While moving reverse, turn a few degrees to the left
+ * debugged for a small angle
+ */
+void turnLeftReverse(int degree) {
+  attachRobot();
+  servoLeft.write(0);
+  servoRight.write(93);
   delay(degree*ANGLE_TO_TIME_MULTIPLIER);
   detachRobot();
 }
